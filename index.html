@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>组件世界-基础组件</title>
+    
+    <link rel=”manifest” href=”/manifest.json”>
+    <script type="module" crossorigin src="./assets/index.14421ee6.js"></script>
+  </head>
+  <body>
+    <div id="header" />
+    <div class="notion-pet-view-container">
+      <div id="app" />
+    </div>
+    <svg t="1658802243213" fill="#654CF6" class="loading" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2237" width="30" height="30"><path d="M512.511 21.483c-271.163 0-491.028 219.86-491.028 491.028 0 271.173 219.856 491.03 491.028 491.03 26.554 0 48.08-21.527 48.08-48.08 0-26.554-21.526-48.08-48.08-48.08-218.065 0-394.869-176.804-394.869-394.87 0-218.06 176.813-394.869 394.87-394.869 218.065 0 394.869 176.804 394.869 394.87 0 26.553 21.526 48.08 48.08 48.08 26.553 0 48.08-21.527 48.08-48.08 0-271.173-219.857-491.03-491.03-491.03z" p-id="2238"></path></svg>
+    <script>
+      window.showLoading = function() {
+        document.querySelector('.loading').style.display = 'block';
+      };
+      window.hideLoading = function() {
+        document.querySelector('.loading').style.display = 'none';
+      };
+    </script>
+    <style>
+      .loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-100%, -100%);
+        /* 使用动画 */
+        animation: loading 1s linear infinite;
+      }
+      /* 动画 */
+      @keyframes loading {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </body>
+  <script>
+    (function(win, export_obj) {
+        win['LogAnalyticsObject'] = export_obj;
+        if (!win[export_obj]) {
+            function _collect() {
+                _collect.q.push(arguments);
+            }
+            _collect.q = _collect.q || [];
+            win[export_obj] = _collect;
+        }
+        win[export_obj].l = +new Date();
+    })(window, 'collectEvent');
+    </script>
+    <script async src="https://lf3-data.volccdn.com/obj/data-static/log-sdk/collect/5.0/collect-rangers-v5.1.2.js"></script>
+</html>
