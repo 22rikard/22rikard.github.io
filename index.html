@@ -1,59 +1,657 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>组件世界-基础组件</title>
-    
-    <link rel=”manifest” href=”/manifest.json”>
-    <script type="module" crossorigin src="./assets/index.14421ee6.js"></script>
-  </head>
-  <body>
-    <div id="header" />
-    <div class="notion-pet-view-container">
-      <div id="app" />
-    </div>
-    <svg t="1658802243213" fill="#654CF6" class="loading" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2237" width="30" height="30"><path d="M512.511 21.483c-271.163 0-491.028 219.86-491.028 491.028 0 271.173 219.856 491.03 491.028 491.03 26.554 0 48.08-21.527 48.08-48.08 0-26.554-21.526-48.08-48.08-48.08-218.065 0-394.869-176.804-394.869-394.87 0-218.06 176.813-394.869 394.87-394.869 218.065 0 394.869 176.804 394.869 394.87 0 26.553 21.526 48.08 48.08 48.08 26.553 0 48.08-21.527 48.08-48.08 0-271.173-219.857-491.03-491.03-491.03z" p-id="2238"></path></svg>
-    <script>
-      window.showLoading = function() {
-        document.querySelector('.loading').style.display = 'block';
-      };
-      window.hideLoading = function() {
-        document.querySelector('.loading').style.display = 'none';
-      };
-    </script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Flip Cards</title>
+    <link rel="stylesheet" href="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-100-M/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/tailwindcss/2.2.19/tailwind.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <style>
-      .loading {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-100%, -100%);
-        /* 使用动画 */
-        animation: loading 1s linear infinite;
-      }
-      /* 动画 */
-      @keyframes loading {
-        0% {
-          transform: rotate(0deg);
+        :root {
+            --primary: #4f46e5;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --light: #f3f4f6;
+            --dark: #1f2937;
+            --card-width: 90vw;
+            --card-height: 70vh;
         }
-        100% {
-          transform: rotate(360deg);
+.hint-divider {
+    position: relative;
+    text-align: center;
+    color: gray;
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-style: italic;  /* 添加斜体样式 */
+}
+
+.hint-divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--primary), transparent);
+    z-index: -1;
+}
+
+.hint-divider span {
+    background: white;
+}
+        body {
+            font-family: 'Noto Sans', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 1rem;
         }
-      }
-    </style>
-  </body>
-  <script>
-    (function(win, export_obj) {
-        win['LogAnalyticsObject'] = export_obj;
-        if (!win[export_obj]) {
-            function _collect() {
-                _collect.q.push(arguments);
+
+        .topic-selector {
+            display: flex;
+            flex-wrap: wrap;  /* 添加这行使按钮可以自动换行 */
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            padding: 0.5rem 0;
+            /* 移除 overflow-x: auto; */
+        }
+
+        .topic-btn {
+            background: white;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            /* 移除 white-space: nowrap; 使文本可以换行 */
+            transition: all 0.3s ease;
+        }
+
+        .topic-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .cards-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .flip-card {
+            width: var(--card-width);
+            height: var(--card-height);
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            border-radius: 1rem;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .flip-card-front {
+            background: white;
+            color: var(--dark);
+        }
+
+        .flip-card-back {
+            background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .dialog-number {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--accent);
+            color: white;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+        }
+
+        .question {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .b-context {
+            font-style: italic;
+            padding: 0.75rem;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .structure-title, .keypoints-title {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--primary);
+            margin: 1rem 0 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .structure-title i, .keypoints-title i {
+            margin-right: 0.5rem;
+        }
+
+        .mermaid-container {
+            background: rgba(243, 244, 246, 0.7);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .key-points {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .key-point {
+            background: var(--light);
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            color: var(--dark);
+            border: 1px solid #e5e7eb;
+        }
+
+        .a-response {
+            line-height: 1.6;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            font-size: 1.1rem;
+        }
+
+        .flip-icon {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        @media (min-width: 640px) {
+            :root {
+                --card-width: 420px;
+                --card-height: 500px;
             }
-            _collect.q = _collect.q || [];
-            win[export_obj] = _collect;
         }
-        win[export_obj].l = +new Date();
-    })(window, 'collectEvent');
+    </style>
+</head>
+<body class="py-4">
+    <div class="max-w-md mx-auto">
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">英语对话记忆卡片</h1>
+        
+        <div class="topic-selector">
+            <button class="topic-btn active" data-topic="1">TOPIC 1</button>
+            <button class="topic-btn" data-topic="3">TOPIC 3</button>
+            <button class="topic-btn" data-topic="4">TOPIC 4</button>
+            <button class="topic-btn" data-topic="5">TOPIC 5</button>
+        </div>
+        <div  style="display: flex; justify-content: center; align-items: center;">点击卡片进行翻转</div>
+        <div class="cards-container" id="cardsContainer">
+            <!-- Cards will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+
+        // Card data for all topics
+        const cardData = {
+    "1": {
+        "topic": "Digital vs Paper Texts",
+        "questions": [
+            {
+                "order": 1,
+                "question": "Do you prefer digital or paper texts? Why?",
+                "dialogs": [
+                    {
+                        "dialogNum": 1,
+                        "prevB": "(First dialog - no previous B response)",
+                        "structure": "graph LR\nA[Question] --> B[Comparison]\nB --> B1[Digital]\nB --> B2[Paper]",
+                        "keyPoints": ["think", "digital texts", "paper texts"],
+                        "aResponse": "Hey, B, what do you think digital texts or paper texts?"
+                    },
+                    {
+                        "dialogNum": 2,
+                        "prevB": "I definitely prefer digital. They're easy to access and I can read them anywhere. Plus, they're usually cheaper and easier to search through.",
+                        "structure": "graph LR\nA[Disagreement] --> B[Preference]\nB --> B1[Feel of paper]\nB --> B2[Sensory details]\nA --> C[Criticism]\nC --> C1[Distractions]",
+                        "keyPoints": ["love paper texts", "flipping pages", "smell of ink", "digital distracting", "notifications"],
+                        "aResponse": "I disagree. I love the feel of paper texts. There's something special about flipping through pages and the smell of fresh ink. Digital texts are too distracting for me, with notifications popping up all the time."
+                    }
+                ]
+            },
+            {
+                "order": 2,
+                "question": "Is it a good idea to use digital texts in English classes? Why?",
+                "dialogs": [
+                    {
+                        "dialogNum": 1,
+                        "prevB": "Fair enough. Everyone has their own preference. I just like the convenience of digital texts, while you prefer the tactile experience of paper. We can all enjoy books in our own way!",
+                        "structure": "graph LR\nA[Question] --> B[Evaluation]\nB --> B1[Digital texts]\nB --> B2[English classes]",
+                        "keyPoints": ["good idea", "digital texts", "English classes"],
+                        "aResponse": "Do you think it's a good idea to use digital texts in English classes?"
+                    },
+                    {
+                        "dialogNum": 2,
+                        "prevB": "Definitely! Digital texts offer so many benefits. Students can access materials anytime, anywhere, and teachers can easily share and update content. Plus, digital tools like dictionaries and grammar checkers are readily available.",
+                        "structure": "graph LR\nA[Concerns] --> B[Distractions]\nB --> B1[Notifications]\nB --> B2[Online content]\nA --> C[Value]\nC --> C1[Tactile experience]",
+                        "keyPoints": ["not sure", "distracted", "notifications", "online content", "tactile experience"],
+                        "aResponse": "I see your point, but I'm not sure. Students might get distracted by notifications or other online content. Plus, the tactile experience of paper texts is important for language learning."
+                    }
+                ]
+            },
+            {
+                "order": 3,
+                "question": "What are the other benefits of digital texts?",
+                "dialogs": [
+                    {
+                        "dialogNum": 1,
+                        "prevB": "That's a valid concern. But teachers can set rules to minimize distractions, and digital texts can still provide valuable learning opportunities. The key is to find a balance.",
+                        "structure": "graph LR\nA[Agreement] --> B[Solution]\nB --> B1[Combined approach]\nA --> C[Question]\nC --> C1[Additional benefits]",
+                        "keyPoints": ["incorporate both", "different styles", "other benefits", "besides accessibility"],
+                        "aResponse": "You're right. It's probably best to incorporate both digital and paper texts in English classes to suit different learning styles. What are some other benefits of digital texts besides accessibility?"
+                    },
+                    {
+                        "dialogNum": 2,
+                        "prevB": "Well, digital texts are highly interactive. You can click on words or phrases to get instant definitions or examples. Plus, with multimedia content like videos and images, digital texts can make learning more engaging and fun.",
+                        "structure": "graph LR\nA[Feature] --> B[Customizable]\nB --> B1[Font size]\nB --> B2[Background]\nB --> B3[Reading level]",
+                        "keyPoints": ["customizable", "font size", "background color", "reading level"],
+                        "aResponse": "That's true. I also like that digital texts are customizable. Students can change the font size, background color, or even the reading level to suit their needs."
+                    },
+                    {
+                        "dialogNum": 3,
+                        "prevB": "Absolutely! And teachers can also use digital tools to track students' progress and provide personalized feedback, which can greatly improve their learning efficiency.",
+                        "structure": "graph LR\nA[Recognition] --> B[Advantages]\nA --> C[Observation]\nC --> C1[Growing acceptance]",
+                        "keyPoints": ["advantages", "embracing them"],
+                        "aResponse": "Yeah, digital texts definitely have their advantages. I'm starting to see why more people are embracing them."
+                    }
+                ]
+            }
+        ]
+    },
+    "3": {
+        "topic": "Retirement Plans",
+        "questions": [
+            {
+                "order": 1,
+                "question": "Do you like to work after retirement? Why or why not?",
+                "dialogs": [
+                    {
+                        "dialogNum": 1,
+                        "prevB": "(First dialog - no previous B response)",
+                        "structure": "graph LR\nA[Reflection] --> B[Question]\nB --> B1[Work after retirement]",
+                        "keyPoints": ["work after retirement"],
+                        "aResponse": "Hey, B, I've been thinking about retirement lately. Do you think you'd like to work after retirement?"
+                    },
+                    {
+                        "dialogNum": 2,
+                        "prevB": "For me, personally, I don't think I'd want to work full-time after retirement. I've been working hard for decades, and I look forward to having more time for myself and my hobbies.",
+                        "structure": "graph LR\nA[Divergent View] --> B[Values]\nB --> B1[Purpose]\nB --> B2[Accomplishment]\nA --> C[Plan]\nC --> C1[Part-time]\nC --> C2[Consulting]",
+                        "keyPoints": ["feel differently", "sense of purpose", "accomplishment", "part-time work", "consulting"],
+                        "aResponse": "I actually feel differently. I think I'd miss the sense of purpose and accomplishment that work brings. I might consider doing part-time work or consulting in my field."
+                    }
+                ]
+            },
+            {
+                "order": 2,
+                "question": "What do you like to do in your golden years?",
+                "dialogs": [
+                    {
+                        "dialogNum": 1,
+                        "prevB": "For me, retirement is a time to recharge, explore new things, and spend quality time with my family.",
+                        "structure": "graph LR\nA[Question] --> B[Vision]\nB --> B1[Golden years]",
+                        "keyPoints": ["envision", "golden years"],
+                        "aResponse": "what do you envision doing in your golden years?"
+                    },
+                    {
+                        "dialogNum": 2,
+                        "prevB": "Well, for me, I'd like to travel a lot more. I've always had a bucket list of places I want to visit, and I think retirement is the perfect time to finally cross them off.",
+                        "structure": "graph LR\nA[Agreement] --> B[Travel]\nA --> C[Priority]\nC --> C1[Family time]",
+                        "keyPoints": ["wanted to travel", "spend time", "family"],
+                        "aResponse": "That sounds great! I've always wanted to travel too, but I also want to spend more time with my family."
+                    }
+                ]
+            },
+            {
+                "order": 3,
+                "question": "Why are some people keen to work after retirement?",
+                "dialogs": [
+                    {
+                        "dialogNum": 1,
+                        "prevB": "Absolutely. I definitely want to make sure I have plenty of that too. But aside from family and travel, I also want to take up some new hobbies.",
+                        "structure": "graph LR\nA[Observation] --> B[Personal Interest]\nB --> B1[New hobby]\nA --> C[Question]\nC --> C1[Working retirees]",
+                        "keyPoints": ["new hobby", "keen to work", "retirement phenomenon"],
+                        "aResponse": "Oh, that's a wonderful idea! I've thought about picking up a new hobby too. I've noticed some people are really keen to keep working after retirement. What do you think of this phenomenon?"
+                    },
+                    {
+                        "dialogNum": 2,
+                        "prevB": "Well, I think it's because work gives them a sense of purpose and accomplishment. After working for so many years, it can be hard to let go of that.",
+                        "structure": "graph LR\nA[Counterpoint] --> B[Retirement Purpose]\nB --> B1[Rest]\nB --> B2[Enjoyment]\nB --> B3[No pressure]",
+                        "keyPoints": ["retirement time", "rest", "enjoy life", "no work pressure"],
+                        "aResponse": "That's a good point. But don't you think retirement is a time to rest and enjoy life without the pressures of work?"
+                    },
+                    {
+                        "dialogNum": 3,
+                        "prevB": "Sure, but for some people, work is what gives them joy and satisfaction. It's not just about the money or the responsibilities; it's about the challenge and the connections they make.",
+                        "structure": "graph LR\nA[Understanding] --> B[Benefits]\nB --> B1[Mental activity]\nB --> B2[Physical activity]\nB --> B3[Cognitive sharpness]",
+                        "keyPoints": ["mentally active", "physically active", "mind sharp", "body moving"],
+                        "aResponse": "I see. That makes sense. Maybe it's also about staying mentally and physically active. Working keeps the mind sharp and the body moving."
+                    }
+                ]
+            }
+        ]
+    },
+    "4": {
+        "topic": "Learning Preferences",
+        "questions": [
+            {
+                "order": 1,
+                "question": "Do you prefer online learning or offline learning? Why?",
+                "dialogs": [
+                    {
+                        "dialogNum": 1,
+                        "prevB": "(First dialog - no previous B response)",
+                        "structure": "graph LR\nA[Reflection] --> B[Question]\nB --> B1[Learning preference]\nB1 --> B1a[Online]\nB1 --> B1b[Offline]",
+                        "keyPoints": ["prefer", "online learning", "offline learning"],
+                        "aResponse": "Hey, B, I've been thinking about this recently. Do you prefer online learning or offline learning?"
+                    },
+                    {
+                        "dialogNum": 2,
+                        "prevB": "Well, I think it depends on the subject and the individual. But personally, I prefer offline learning. There's something about being in a classroom with a teacher and classmates that just makes it more engaging.",
+                        "structure": "graph LR\nA[Preference] --> B[Online Learning]\nB --> B1[Convenience]\nB --> B2[Self-paced]\nB --> B3[Flexibility]\nB3 --> B3a[Resource choice]",
+                        "keyPoints": ["prefer online", "convenient", "own pace", "flexibility", "choose learning"],
+                        "aResponse": "I see your point. But I actually prefer online learning. It's more convenient for me, and I can learn at my own pace. Plus, with so many resources online, I feel like I have more flexibility in choosing what I want to learn."
+                    }
+                ]
+            },
+            {
+                "order": 2,
+                "question": "What are the advantages of online learning?",
+                "dialogs": [
+                    {
+                        "dialogNum": 1,
+                        "prevB": "That's true. Online learning definitely has its advantages. But for me, the social aspect of offline learning is really important. I like being able to interact with my peers and teacher face-to-face.",
+                        "structure": "graph LR\nA[Observation] --> B[Individual Approach]\nB --> B1[Learning style]\nA --> C[Question]\nC --> C1[Online advantages]",
+                        "keyPoints": ["pros and cons", "learning style", "advantages", "online learning"],
+                        "aResponse": "Yeah, I can understand that. Each has its pros and cons. Ultimately, it's about finding the learning style that works best for you. What do you think are the advantages of online learning?"
+                    },
+                    {
+                        "dialogNum": 2,
+                        "prevB": "Well, for me, the flexibility is key. You can learn at any time, anywhere, which is great for people with busy schedules.",
+                        "structure": "graph LR\nA[Agreement] --> B[Resources]\nB --> B1[Customization]\nB1 --> B1a[Personalized]\nB1 --> B1b[Needs-based]",
+                        "keyPoints": ["online resources", "customize", "learning experience", "fit needs"],
+                        "aResponse": "Yeah, I agree. And with so many online resources, you can customize your learning experience to fit your needs."
+                    },
+                    {
+                        "dialogNum": 3,
+                        "prevB": "Absolutely. Plus, online learning is often more cost-effective compared to traditional classrooms.",
+                        "structure": "graph LR\nA[Benefit] --> B[Psychological]\nB --> B1[Introvert-friendly]\nB1 --> B1a[Less overwhelming]",
+                        "keyPoints": ["introverts", "less overwhelming", "virtual environment"],
+                        "aResponse": "Definitely. And for introverts, it can be less overwhelming to learn in a virtual environment."
+                    }
+                ]
+            },
+            {
+                "order": 3,
+                "question": "What are the disadvantages of online learning?",
+                "dialogs": [
+                    {
+                        "dialogNum": 1,
+                        "prevB": "Absolutely. Plus, online learning is often more cost-effective compared to traditional classrooms.",
+                        "structure": "graph LR\nA[Reflection] --> B[Question]\nB --> B1[Online drawbacks]",
+                        "keyPoints": ["disadvantages", "online learning"],
+                        "aResponse": "I've been wondering, what do you think are the disadvantages of online learning?"
+                    },
+                    {
+                        "dialogNum": 2,
+                        "prevB": "Well, I think one big disadvantage is the lack of face-to-face interaction. It can be harder to build connections and collaborate with classmates.",
+                        "structure": "graph LR\nA[Challenge] --> B[Distraction]\nB --> B1[Online environment]\nB --> B2[Focus issues]",
+                        "keyPoints": ["get distracted", "learning online", "many distractions"],
+                        "aResponse": "That's a good point. I also find that it's easier to get distracted when learning online. There are so many distractions online!"
+                    },
+                    {
+                        "dialogNum": 3,
+                        "prevB": "Yeah, definitely. And sometimes, technical issues can really disrupt the learning process.",
+                        "structure": "graph LR\nA[Assessment] --> B[Challenges]\nA --> C[Solution]\nC --> C1[Proper tools]\nC --> C2[Mindset]",
+                        "keyPoints": ["challenges", "right tools", "mindset", "effective"],
+                        "aResponse": "Absolutely. Online learning definitely has its challenges, but with the right tools and mindset, it can still be effective."
+                    }
+                ]
+            }
+        ]
+    },
+    "5": {
+        "topic": "Humanitarian Causes",
+        "questions": [
+            {
+                "order": 1,
+                "question": "Talk about a celebrity who is active in humanitarian causes.",
+                "dialogs": [
+                    {
+                        "dialogNum": 1,
+                        "prevB": "(First dialog - no previous B response)",
+                        "structure": "graph LR\nA[Observation] --> B[Business Success]\nA --> C[Humanitarian Work]",
+                        "keyPoints": ["Jack Ma", "business success", "humanitarian causes"],
+                        "aResponse": "Did you know that Jack Ma has not only achieved great success in business, but he's also actively involved in humanitarian causes?"
+                    },
+                    {
+                        "dialogNum": 2,
+                        "prevB": "Yes, I've heard about it. Jack Ma is very concerned about education and environmental protection. He has donated huge amounts of money to education projects in impoverished areas.",
+                        "structure": "graph LR\nA[Initiative] --> B[Rural Teachers]\nB --> B1[Training]\nB --> B2[Support]\nA --> C[Assessment]\nC --> C1[Admirable]",
+                        "keyPoints": ["Rural Teacher Initiative", "trainings", "support", "admirable spirit"],
+                        "aResponse": "Absolutely, he's also promoted the \"Rural Teacher Initiative\" and provided many trainings and support for rural teachers. His spirit is truly admirable."
+                    }
+                ]
+            },
+            {
+                "order": 2,
+                "question": "What is the biggest benefit of being involved in humanitarian causes?",
+                "dialogs": [
+                    {
+                        "dialogNum": 1,
+                        "prevB": "Indeed, he uses his influence and wealth to help those who truly need it. Jack Ma is a role model worthy of our admiration.",
+                        "structure": "graph LR\nA[Reflection] --> B[Humanitarian Focus]\nA --> C[Question]\nC --> C1[Benefits]",
+                        "keyPoints": ["thinking about", "humanitarian causes", "biggest benefit"],
+                        "aResponse": "Yes, he's not just a successful businessman, but also a person with compassion and a sense of responsibility. I've been thinking a lot about humanitarian causes lately. What do you think is the biggest benefit of getting involved in them?"
+                    },
+                    {
+                        "dialogNum": 2,
+                        "prevB": "Well, for me, it's the incredible sense of fulfillment and purpose I get from knowing that I'm making a difference in someone's life. Helping those in need truly touches my heart and gives me a deeper understanding of the value of life.",
+                        "structure": "graph LR\nA[Perspective] --> B[Change]\nB --> B1[Meaningful]\nB --> B2[Lasting]\nA --> C[Impact]\nC --> C1[Collective effort]\nC --> C2[Life improvement]",
+                        "keyPoints": ["meaningful change", "lasting change", "small efforts", "significant impact", "improve lives"],
+                        "aResponse": "I couldn't agree more. But I also think it's about creating meaningful and lasting change in the world. Even the smallest efforts, when combined with others, can make a significant impact and help improve the lives of many."
+                    },
+                    {
+                        "dialogNum": 3,
+                        "prevB": "Absolutely. And it's not just about giving; it's about receiving as well. We learn so much from the people we help, and it helps us grow as individuals and broaden our perspectives. The personal growth and development I've experienced through humanitarian work is truly invaluable.",
+                        "structure": "graph LR\nA[Assessment] --> B[Challenges]\nA --> C[Rewards]\nC --> C1[Personal]\nC --> C2[Societal]\nA --> D[Journey]\nD --> D1[Joy]\nD --> D2[Purpose]",
+                        "keyPoints": ["challenging", "rewards", "personal", "societal", "joy", "purpose"],
+                        "aResponse": "Yes, you're right. Humanitarian work can be challenging, but the rewards, both personal and societal, are immense. It's a rewarding journey that brings joy and purpose to our lives."
+                    }
+                ]
+            },
+            {
+                "order": 3,
+                "question": "How can people contribute to the humanitarian effort?",
+                "dialogs": [
+                    {
+                        "dialogNum": 1,
+                        "prevB": "Absolutely. And it's not just about giving; it's about receiving as well. We learn so much from the people we help, and it helps us grow as individuals and broaden our perspectives. The personal growth and development I've experienced through humanitarian work is truly invaluable.",
+                        "structure": "graph LR\nA[Contribution] --> B[Volunteering]\nB --> B1[On-site]\nB --> B2[Remote]\nA --> C[Awareness]\nC --> C1[Social media]\nC --> C2[Education]",
+                        "keyPoints": ["volunteering", "on-ground", "remote", "spreading awareness", "social media", "education"],
+                        "aResponse": "but there are other ways too. Volunteering on the ground or even remotely can be impactful. Spreading awareness through social media or education also helps."
+                    },
+                    {
+                        "dialogNum": 2,
+                        "prevB": "You're right. Everyone can contribute in some way, no matter how small. The key is to find what works for you and be consistent with it.",
+                        "structure": "graph LR\nA[Vision] --> B[Collective Impact]\nB --> B1[Significant difference]\nB --> B2[Help needy]",
+                        "keyPoints": ["together", "significant difference", "lives in need"],
+                        "aResponse": "Absolutely. Together, we can make a significant difference in the lives of those in need."
+                    }
+                ]
+            }
+        ]
+    }
+};
+        // Current topic
+        let currentTopic = "1";
+
+        // Initialize the app
+        function init() {
+            // Set up topic switcher
+            document.querySelectorAll('.topic-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelector('.topic-btn.active').classList.remove('active');
+                    this.classList.add('active');
+                    currentTopic = this.dataset.topic;
+                    renderCards();
+                });
+            });
+
+            // Load first topic
+            renderCards();
+        }
+
+        // Render cards for current topic
+        function renderCards() {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = '';
+            
+            const topic = cardData[currentTopic];
+            
+            topic.questions.forEach(question => {
+                question.dialogs.forEach(dialog => {
+                    const card = document.createElement('div');
+                    card.className = 'flip-card';
+                    card.innerHTML = `
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="dialog-number">${dialog.dialogNum}</div>
+                                <div class="question">${question.question}</div>
+                                <div class="b-context">B：${dialog.prevB}</div>
+                                <div class="hint-divider">
+                                    <span>------提示------</span>
+                                </div>
+                                <div class="structure-title">
+                                    <i class="fas fa-project-diagram"></i> 表达结构
+                                </div>
+                                <div class="mermaid-container">
+                                    <div class="mermaid">${dialog.structure}</div>
+                                </div>
+                                
+                                <div class="keypoints-title">
+                                    <i class="fas fa-key"></i> 关键词
+                                </div>
+                                <div class="key-points">
+                                    ${dialog.keyPoints.map(point => `<div class="key-point">${point}</div>`).join('')}
+                                </div>
+                            </div>
+                            
+                            <div class="flip-card-back">
+                                <div class="a-response">${dialog.aResponse}</div>
+                                <div class="flip-icon">
+                                    <i class="fas fa-redo"></i>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add click event to flip card
+                    card.addEventListener('click', function() {
+                        this.classList.toggle('flipped');
+                    });
+                    
+                    container.appendChild(card);
+                });
+            });
+            
+            // Render mermaid diagrams after cards are loaded
+            setTimeout(() => {
+                mermaid.init(undefined, '.mermaid');
+                // 添加代码确保卡片正反面高度一致
+                adjustCardHeights();
+            }, 100);
+        }
+
+        // 添加新函数来调整卡片高度
+        function adjustCardHeights() {
+            document.querySelectorAll('.flip-card').forEach(card => {
+                const front = card.querySelector('.flip-card-front');
+                const back = card.querySelector('.flip-card-back');
+                
+                // 重置高度以获取实际内容高度
+                front.style.height = 'auto';
+                back.style.height = 'auto';
+                
+                // 获取内容高度
+                const frontHeight = front.offsetHeight;
+                const backHeight = back.offsetHeight;
+                
+                // 使用较大的高度
+                const maxHeight = Math.max(frontHeight, backHeight);
+                
+                // 设置两面的高度相同
+                front.style.height = `${maxHeight}px`;
+                back.style.height = `${maxHeight}px`;
+                
+                // 设置卡片容器高度
+                card.style.height = `${maxHeight}px`;
+            });
+        }
+
+        // 在窗口大小改变时重新调整卡片高度
+        window.addEventListener('resize', function() {
+            setTimeout(adjustCardHeights, 100);
+        });
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
     </script>
-    <script async src="https://lf3-data.volccdn.com/obj/data-static/log-sdk/collect/5.0/collect-rangers-v5.1.2.js"></script>
+</body>
 </html>
